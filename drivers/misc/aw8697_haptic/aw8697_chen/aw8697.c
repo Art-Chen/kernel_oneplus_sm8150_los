@@ -1178,8 +1178,6 @@ static int aw8697_haptic_read_cont_f0(struct aw8697 *aw8697)
 	}
 	f0_tmp = 1000000000 / (f0_reg * aw8697->info.f0_coeff);
 	aw8697->cont_f0 = (unsigned int)f0_tmp;
-	// Chen change to += 30, org -= 12
-	aw8697->cont_f0 += 30;
 	aw8697->f0 = aw8697->cont_f0;
 	aw_info("%s f0=%d\n", __func__, aw8697->cont_f0);
 
@@ -1831,7 +1829,11 @@ static int aw8697_haptic_cont(struct aw8697 *aw8697)
 	/* work mode */
 	aw8697_haptic_play_mode(aw8697, AW8697_HAPTIC_CONT_MODE);
 
-	/* preset f0 */
+	/* reset gain: CONT mode inherits DATDBG from previous mode */
+	aw8697_i2c_write(aw8697, AW8697_REG_DATDBG, 0x80);
+
+	/* preset f0 — use calibrated f0, not DTS default */
+	aw8697->info.f0_pre = aw8697->f0;
 	aw8697_haptic_set_f0_preset(aw8697);
 
 	/* lpf */
@@ -1878,6 +1880,15 @@ static int aw8697_haptic_cont(struct aw8697 *aw8697)
 	aw8697_i2c_write(aw8697, AW8697_REG_ZC_THRSH_L,
 			 (unsigned char)(aw8697->info.cont_zc_thr >> 0));
 
+		/* bemf threshold */
+		aw8697_i2c_write(aw8697, AW8697_REG_BEMF_VTHH_H,
+				 aw8697->info.bemf_config[0]);
+		aw8697_i2c_write(aw8697, AW8697_REG_BEMF_VTHH_L,
+				 aw8697->info.bemf_config[1]);
+		aw8697_i2c_write(aw8697, AW8697_REG_BEMF_VTHL_H,
+				 aw8697->info.bemf_config[2]);
+		aw8697_i2c_write(aw8697, AW8697_REG_BEMF_VTHL_L,
+				 aw8697->info.bemf_config[3]);
 	aw8697_i2c_write_bits(aw8697, AW8697_REG_BEMF_NUM,
 			      AW8697_BIT_BEMF_NUM_BRK_MASK,
 			      aw8697->info.cont_num_brk);
@@ -2053,7 +2064,7 @@ static int aw8697_haptic_get_f0(struct aw8697 *aw8697)
 	aw8697_i2c_write(aw8697, AW8697_REG_TSET, aw8697->info.tset);
 
 	/* drive time  */
-    aw8697_i2c_write(aw8697, AW8697_REG_DRV_TIME, 0xFE);
+	aw8697_i2c_write(aw8697, AW8697_REG_DRV_TIME, 0x75);
 
 	/* preset f0 */
 	aw8697_haptic_set_f0_preset(aw8697);
@@ -2900,10 +2911,13 @@ int aw8697_haptics_upload_effect(struct input_dev *dev,
 	 }
 	if (aw8697->effect_type == FF_CONSTANT) {
 		aw_dbg("%s: effect_type is  FF_CONSTANT!\n", __func__);
-		/*cont mode set duration */
 		aw8697->duration = effect->replay.length;
 		aw8697->activate_mode = AW8697_HAPTIC_ACTIVATE_RAM_LOOP_MODE;
 		aw8697->effect_id = aw8697->info.effect_id_boundary;
+		/* map constant level to vmax for gain scaling */
+		play->vmax_mv = effect->u.constant.level;
+		if (play->vmax_mv < 0x1000)
+			play->vmax_mv = 0x1000;
 
 	} else if (aw8697->effect_type == FF_PERIODIC) {
 		if (aw8697->effects_count == 0) {
@@ -2997,9 +3011,9 @@ int aw8697_haptics_playback(struct input_dev *dev, int effect_id,
 	hrtimer_cancel(&aw8697->timer);
 
 	if (aw8697->effect_type == FF_CONSTANT &&
-		aw8697->activate_mode == AW8697_HAPTIC_ACTIVATE_RAM_LOOP_MODE) {
-		aw_dbg("%s: enter cont_mode\n", __func__);
-		/* schedule_work(&aw8697->vibrator_work); */
+		(aw8697->activate_mode == AW8697_HAPTIC_ACTIVATE_RAM_LOOP_MODE ||
+		 aw8697->activate_mode == AW8697_HAPTIC_ACTIVATE_CONT_MODE)) {
+		aw_dbg("%s: enter vibrator_work\n", __func__);
 		queue_work(aw8697->work_queue, &aw8697->vibrator_work);
 	} else if (aw8697->effect_type == FF_PERIODIC &&
 		aw8697->activate_mode == AW8697_HAPTIC_ACTIVATE_RAM_MODE) {
@@ -4524,6 +4538,10 @@ int aw8697_haptic_init(struct aw8697 *aw8697)
 	aw8697->gain = reg_val & 0xFF;
 	ret = aw8697_i2c_read(aw8697, AW8697_REG_BSTDBG4, &reg_val);
 	aw8697->vmax = (reg_val >> 1) & 0x1F;
+	/* set boost voltage to DTS default */
+	if (aw8697->info.bst_vol_default <= AW8697_MAX_BST_VO)
+		aw8697_haptic_set_bst_vol(aw8697,
+					  aw8697->info.bst_vol_default);
 	for (i = 0; i < AW8697_SEQUENCER_SIZE; i++) {
 		ret = aw8697_i2c_read(aw8697, AW8697_REG_WAVSEQ1 + i, &reg_val);
 		aw8697->seq[i] = reg_val;

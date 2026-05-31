@@ -64,7 +64,7 @@
 /* #define TEST_RTP */
 #define AW_RAM_UPDATE_DELAY
 //#define ENABLE_PIN_CONTROL
-#define USE_CONT_F0_CALI
+//#define USE_CONT_F0_CALI
 //#define AW_CHECK_RAM_DATA
 //#define AW_CHECK_QUAL
 /*********************************************************

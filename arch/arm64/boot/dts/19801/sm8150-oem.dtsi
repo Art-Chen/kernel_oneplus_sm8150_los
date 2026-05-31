@@ -387,9 +387,9 @@
 		aw8697_vib_trig_config = < 0 1 1 1 2
 						0 1 1 1 2
 						0 1 1 1 2 >;
-		aw8697_vib_bst_vol_default = < 0x10 >;
-		aw8697_vib_bst_vol_ram = < 0x10 >;
-		aw8697_vib_bst_vol_rtp = < 0x10 >;
+		aw8697_vib_bst_vol_default = < 0x16 >;
+		aw8697_vib_bst_vol_ram = < 0x16 >;
+		aw8697_vib_bst_vol_rtp = < 0x16 >;
 		vib_effect_id_boundary = < 10 >;
 		vib_effect_max = < 197 >;   /*vib_effect_max must bigger than vib_effect_id*/
 		vib_rtp_time = < 20 20 20 20 20 20 20 20 20000 15000
