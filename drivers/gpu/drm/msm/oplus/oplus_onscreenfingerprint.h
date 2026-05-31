@@ -63,5 +63,17 @@ bool _sde_encoder_setup_dither_for_onscreenfingerprint(struct sde_encoder_phys *
 
 int sde_plane_check_fingerprint_layer(const struct drm_plane_state *drm_state);
 
+int sde_plane_check_fingerprint_layer_chen(const struct drm_plane_state *drm_state);
+
+struct fppressed_layer_params {
+	int crtc_x;
+	int crtc_y;
+	int crtc_w;
+	int crtc_h;
+	bool enabled;
+};
+
+extern struct fppressed_layer_params g_fppressed_layer;
+
 int oplus_display_panel_get_dimlayer_hbm(void *data);
 #endif /*_OPLUS_ONSCREENFINGERPRINT_H_*/

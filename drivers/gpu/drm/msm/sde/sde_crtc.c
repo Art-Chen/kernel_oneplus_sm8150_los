@@ -5453,6 +5453,8 @@ static int sde_crtc_onscreenfinger_atomic_check(struct sde_crtc_state *cstate,
 
 	for (i = 0; i < cnt; i++) {
 		mode = sde_plane_check_fingerprint_layer(pstates[i].drm_pstate);
+		if (mode == 0)
+			mode = sde_plane_check_fingerprint_layer_chen(pstates[i].drm_pstate);
 		if (mode == 1)
 			fp_index = i;
 		if (mode == 2)

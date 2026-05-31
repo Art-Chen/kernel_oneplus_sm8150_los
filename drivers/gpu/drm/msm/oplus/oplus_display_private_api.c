@@ -2641,6 +2641,38 @@ static ssize_t oplus_display_get_fp_state(struct kobject *obj,
 	return sprintf(buf, "%d,%d,%d\n", fp_state.x, fp_state.y, fp_state.touch_state);
 }
 
+static ssize_t oplus_display_set_fppressed_layer(struct kobject *obj,
+	struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int x, y, w, h;
+
+	if (sscanf(buf, "%d,%d,%d,%d", &x, &y, &w, &h) == 4) {
+		g_fppressed_layer.crtc_x = x;
+		g_fppressed_layer.crtc_y = y;
+		g_fppressed_layer.crtc_w = w;
+		g_fppressed_layer.crtc_h = h;
+		g_fppressed_layer.enabled = true;
+		pr_info("%s: fppressed_layer set to %d,%d,%d,%d\n",
+			__func__, x, y, w, h);
+	} else {
+		pr_err("%s: invalid format, use x,y,w,h\n", __func__);
+		return -EINVAL;
+	}
+
+	return count;
+}
+
+static ssize_t oplus_display_get_fppressed_layer(struct kobject *obj,
+	struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d,%d,%d,%d enabled=%d\n",
+		g_fppressed_layer.crtc_x,
+		g_fppressed_layer.crtc_y,
+		g_fppressed_layer.crtc_w,
+		g_fppressed_layer.crtc_h,
+		g_fppressed_layer.enabled);
+}
+
 static struct kobject *oplus_display_kobj;
 
 static OPLUS_ATTR(hbm, S_IRUGO | S_IWUSR, oplus_display_get_hbm,
@@ -2705,6 +2737,8 @@ static OPLUS_ATTR(mipi_clk_rate_hz, S_IRUGO|S_IWUSR, oplus_display_get_mipi_clk_
 static OPLUS_ATTR(osc_clock, S_IRUGO|S_IWUSR, oplus_display_get_osc_clk,
 	oplus_display_set_osc_clk);
 static OPLUS_ATTR(fp_state, S_IRUGO, oplus_display_get_fp_state, NULL);
+static OPLUS_ATTR(fppressed_layer, S_IRUGO | S_IWUSR,
+	oplus_display_get_fppressed_layer, oplus_display_set_fppressed_layer);
 
 /*
  * Create a group of attributes so that we can create and destroy them all
@@ -2744,6 +2778,7 @@ static struct attribute *oplus_display_attrs[] = {
 	&oplus_attr_mipi_clk_rate_hz.attr,
 	&oplus_attr_osc_clock.attr,
 	&oplus_attr_fp_state.attr,
+	&oplus_attr_fppressed_layer.attr,
 	NULL,	/* need to NULL terminate the list of attributes */
 };
 

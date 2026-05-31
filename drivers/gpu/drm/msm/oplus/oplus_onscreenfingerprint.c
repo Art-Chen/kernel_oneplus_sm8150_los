@@ -22,6 +22,7 @@ bool oplus_pcc_enabled = false;
 bool oplus_skip_pcc = false;
 bool oplus_fp_mode = false;
 
+struct fppressed_layer_params g_fppressed_layer;
 
 struct drm_msm_pcc oplus_save_pcc;
 
@@ -711,6 +712,23 @@ int sde_plane_check_fingerprint_layer(const struct drm_plane_state *drm_state)
 	pstate = to_sde_plane_state(drm_state);
 
 	return sde_plane_get_property(pstate, PLANE_PROP_CUSTOM);
+}
+
+int sde_plane_check_fingerprint_layer_chen(const struct drm_plane_state *drm_state)
+{
+	if (!drm_state)
+		return 0;
+
+	if (!g_fppressed_layer.enabled)
+		return 0;
+
+	if (drm_state->crtc_x == g_fppressed_layer.crtc_x &&
+	    drm_state->crtc_y == g_fppressed_layer.crtc_y &&
+	    drm_state->crtc_w == g_fppressed_layer.crtc_w &&
+	    drm_state->crtc_h == g_fppressed_layer.crtc_h)
+		return 2;
+
+	return 0;
 }
 
 int oplus_display_panel_get_dimlayer_hbm(void *data)
