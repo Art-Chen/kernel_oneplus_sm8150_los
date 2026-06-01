@@ -495,6 +495,10 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(wireless_type),
 	POWER_SUPPLY_ATTR(cep_info),
 #endif /*VENDOR_EDIT*/
+	// Chen added for Miui Adapt
+	POWER_SUPPLY_ATTR(quick_charge_type),
+	POWER_SUPPLY_ATTR(soc_decimal),
+	POWER_SUPPLY_ATTR(soc_decimal_rate),
 	/* Properties of type `const char *' */
 	POWER_SUPPLY_ATTR(model_name),
 	POWER_SUPPLY_ATTR(manufacturer),

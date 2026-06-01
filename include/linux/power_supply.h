@@ -432,6 +432,10 @@ enum power_supply_property {
 	POWER_SUPPLY_PROP_CEP_INFO,
 #endif
 //#endif /*VENDOR_EDIT*/
+	// Chen added for Miui Adapt
+	POWER_SUPPLY_PROP_QUICK_CHARGE_TYPE,
+	POWER_SUPPLY_PROP_SOC_DECIMAL,
+	POWER_SUPPLY_PROP_SOC_DECIMAL_RATE,
 	/* Properties of type `const char *' */
 	POWER_SUPPLY_PROP_MODEL_NAME,
 	POWER_SUPPLY_PROP_MANUFACTURER,

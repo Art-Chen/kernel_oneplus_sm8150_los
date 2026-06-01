@@ -172,6 +172,9 @@ enum power_supply_property oplus_batt_props[] = {
 	POWER_SUPPLY_PROP_PRESENT,
 	POWER_SUPPLY_PROP_TECHNOLOGY,
 	POWER_SUPPLY_PROP_CAPACITY,
+	POWER_SUPPLY_PROP_QUICK_CHARGE_TYPE,
+	POWER_SUPPLY_PROP_SOC_DECIMAL,
+	POWER_SUPPLY_PROP_SOC_DECIMAL_RATE,
 	POWER_SUPPLY_PROP_TEMP,
 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
 	POWER_SUPPLY_PROP_VOLTAGE_MIN,
@@ -607,6 +610,92 @@ int oplus_battery_set_property(struct power_supply *psy,
 	return ret;
 }
 
+static int chen_get_quick_charge_type(void)
+{
+	switch (oplus_vooc_get_fast_chg_type()) {
+	case CHARGER_SUBTYPE_FASTCHG_VOOC:
+		return 3;
+	case CHARGER_SUBTYPE_FASTCHG_SVOOC:
+		return 4;
+	case CHARGER_SUBTYPE_PD:
+	case CHARGER_SUBTYPE_QC:
+		return 1;
+	default:
+		break;
+	}
+	return oplus_chg_show_vooc_logo_ornot();
+}
+
+static int chen_get_soc_decimal(void)
+{
+	int val;
+	bool svooc_is_control_by_vooc;
+	struct oplus_chg_chip *chip = g_charger_chip;
+
+	if (!chip)
+		return 0;
+
+	chip->boot_completed = true;
+
+	if (is_vooc_support_single_batt_svooc() == true) {
+		switch (oplus_vooc_get_fast_chg_type()) {
+		case CHARGER_SUBTYPE_FASTCHG_VOOC:
+			svooc_is_control_by_vooc = true;
+			break;
+		case CHARGER_SUBTYPE_FASTCHG_SVOOC:
+			svooc_is_control_by_vooc = false;
+			break;
+		default:
+			svooc_is_control_by_vooc = true;
+			break;
+		}
+	} else {
+		svooc_is_control_by_vooc =
+			(chip->vbatt_num == 2 &&
+			 oplus_vooc_get_fast_chg_type() == CHARGER_SUBTYPE_FASTCHG_VOOC);
+	}
+
+	if (chip->vooc_show_ui_soc_decimal) {
+		if (svooc_is_control_by_vooc != true &&
+		    chip->boot_completed == true &&
+		    chip->calculate_decimal_time == 0 &&
+		    oplus_chg_show_vooc_logo_ornot() == true) {
+			cancel_delayed_work_sync(&chip->ui_soc_decimal_work);
+			oplus_chg_ui_soc_decimal_init();
+			mod_delayed_work(system_wq, &chip->ui_soc_decimal_work, 0);
+		}
+		val = (chip->ui_soc_integer + chip->ui_soc_decimal) / 10;
+		if (chip->decimal_control == false)
+			val = 0;
+	} else {
+		val = 0;
+	}
+
+	return val != 0 ? val % 100 : 0;
+}
+
+static int chen_get_soc_decimal_rate(void)
+{
+	static const int rate_seq[] = {
+		0,38, 10,35, 20,33, 30,33, 40,33,
+		50,33, 60,33, 70,30, 80,25, 90,20, 95,10,
+	};
+	struct oplus_chg_chip *chip = g_charger_chip;
+	int i, soc;
+
+	if (!chip)
+		return 0;
+	if (chip->vooc_show_ui_soc_decimal && chip->decimal_control)
+		soc = (chip->ui_soc_integer + chip->ui_soc_decimal) / 1000;
+	else
+		soc = chip->ui_soc;
+	for (i = 0; i < ARRAY_SIZE(rate_seq); i += 2) {
+		if (soc < rate_seq[i])
+			break;
+	}
+	return rate_seq[i > 0 ? i - 1 : 0];
+}
+
 int oplus_battery_get_property(struct power_supply *psy,
 		enum power_supply_property psp,
 		union power_supply_propval *val)
@@ -652,6 +741,15 @@ int oplus_battery_get_property(struct power_supply *psy,
 				val->intval = 100;
 			}
 
+			break;
+		case POWER_SUPPLY_PROP_QUICK_CHARGE_TYPE:
+			val->intval = chen_get_quick_charge_type();
+			break;
+		case POWER_SUPPLY_PROP_SOC_DECIMAL:
+			val->intval = chen_get_soc_decimal();
+			break;
+		case POWER_SUPPLY_PROP_SOC_DECIMAL_RATE:
+			val->intval = chen_get_soc_decimal_rate();
 			break;
 
 #ifdef CONFIG_OPLUS_CHIP_SOC_NODE
