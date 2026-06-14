@@ -4405,7 +4405,7 @@ static void _sde_plane_install_properties(struct drm_plane *plane,
 	msm_property_install_range(&psde->property_info, "zpos",
 		0x0, 0, zpos_max, zpos_def, PLANE_PROP_ZPOS);
 #ifdef OPLUS_BUG_STABILITY
-	msm_property_install_range(&psde->property_info,"PLANE_CUST",
+	msm_property_install_range(&psde->property_info, "fod",
 		0x0, 0, INT_MAX, 0, PLANE_PROP_CUSTOM);
 #endif
 
@@ -4860,6 +4860,7 @@ static int sde_plane_atomic_set_property(struct drm_plane *plane,
 		pstate = to_sde_plane_state(state);
 		idx = msm_property_index(&psde->property_info,
 				property);
+#ifdef CHEN_REMOVE
 		if (idx == PLANE_PROP_ZPOS) {
 			if (val & FOD_PRESSED_LAYER_ZORDER) {
 				val &= ~FOD_PRESSED_LAYER_ZORDER;
@@ -4874,6 +4875,7 @@ static int sde_plane_atomic_set_property(struct drm_plane *plane,
 			if (ret)
 				SDE_ERROR("failed to set fod prop");
 		}
+#endif
 		ret = msm_property_atomic_set(&psde->property_info,
 				&pstate->property_state, property, val);
 		if (!ret) {
