@@ -614,7 +614,6 @@ static int chen_get_quick_charge_type(void)
 {
 	switch (oplus_vooc_get_fast_chg_type()) {
 	case CHARGER_SUBTYPE_FASTCHG_VOOC:
-		return 3;
 	case CHARGER_SUBTYPE_FASTCHG_SVOOC:
 		return 4;
 	case CHARGER_SUBTYPE_PD:
