@@ -5436,6 +5436,9 @@ extern bool oplus_ffl_trigger_finish;
 extern int oplus_dimlayer_bl;
 extern ktime_t oplus_backlight_time;
 extern u32 oplus_backlight_delta;
+int last_fp_index = -1;
+int last_fppressed_index = -1;
+int last_aod_index = -1;
 
 static int sde_crtc_onscreenfinger_atomic_check(struct sde_crtc_state *cstate,
 		struct plane_state *pstates, int cnt)
@@ -5453,6 +5456,8 @@ static int sde_crtc_onscreenfinger_atomic_check(struct sde_crtc_state *cstate,
 
 	for (i = 0; i < cnt; i++) {
 		mode = sde_plane_check_fingerprint_layer(pstates[i].drm_pstate);
+		// chen mod
+		mode = mode & 0x0F;
 		if (mode == 0)
 			mode = sde_plane_check_fingerprint_layer_chen(pstates[i].drm_pstate);
 		if (mode == 1)
@@ -5467,6 +5472,16 @@ static int sde_crtc_onscreenfinger_atomic_check(struct sde_crtc_state *cstate,
 
 	if (!is_dsi_panel(cstate->base.crtc))
 		return 0;
+
+	if (fp_index != last_fp_index 
+		|| fppressed_index != last_fppressed_index 
+		|| aod_index != last_aod_index) {
+		pr_info("Art_Chen: fod_layer_detect_change : fp_index %d, fppressed_index %d, aod_index %d", fp_index, fppressed_index, aod_index);
+	}
+
+	last_fp_index = fp_index;
+	last_fppressed_index = fppressed_index;
+	last_aod_index = aod_index;
 
 	if (oplus_dimlayer_bl_enable) {
 		int backlight = oplus_get_panel_brightness();
@@ -5496,6 +5511,12 @@ static int sde_crtc_onscreenfinger_atomic_check(struct sde_crtc_state *cstate,
 			pstates[fppressed_index].sde_pstate->is_skip = true;
 			fppressed_index = -1;
 		}
+	}
+
+	// Art_Chen add for HyperOS
+	if (fp_index >= 0 && cnt > 2) {
+		// fp_index is hbm_overlay in HyperOS, hide it when SDE Composition working well.
+		pstates[fp_index].sde_pstate->property_values[PLANE_PROP_ALPHA].value = 0;
 	}
 
 	SDE_EVT32(cstate->fingerprint_dim_layer);

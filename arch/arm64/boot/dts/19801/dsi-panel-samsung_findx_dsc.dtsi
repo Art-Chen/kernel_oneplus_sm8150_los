@@ -24,8 +24,8 @@
 		qcom,mdss-dsi-underflow-color = <0xff>;
 		qcom,mdss-dsi-border-color = <0>;
 		qcom,mdss-dsi-reset-sequence = <1 5>, <0 2>, <1 10>;
-		qcom,mdss-pan-physical-width-dimension = <68>;
-		qcom,mdss-pan-physical-height-dimension = <145>;
+		qcom,mdss-pan-physical-width-dimension = <680>;
+		qcom,mdss-pan-physical-height-dimension = <1450>;
 		qcom,mdss-dsi-traffic-mode = "burst_mode";
 		qcom,mdss-dsi-bllp-eof-power-mode;
 		qcom,mdss-dsi-bllp-power-mode;

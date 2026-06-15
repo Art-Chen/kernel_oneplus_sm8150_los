@@ -22,7 +22,13 @@ bool oplus_pcc_enabled = false;
 bool oplus_skip_pcc = false;
 bool oplus_fp_mode = false;
 
-struct fppressed_layer_params g_fppressed_layer;
+struct fppressed_layer_params g_fppressed_layer = {
+	.enabled = false,
+	.crtc_x = 0,
+	.crtc_y = 0,
+	.crtc_w = 0,
+	.crtc_h = 0,
+};
 
 struct drm_msm_pcc oplus_save_pcc;
 
