@@ -2406,6 +2406,8 @@ int dsi_display_oplus_set_power(struct drm_connector *connector,
 			rc = dsi_panel_set_lp1(display->panel);
 			rc = dsi_panel_set_lp2(display->panel);
 			set_oplus_display_scene(OPLUS_DISPLAY_AOD_SCENE);
+			pr_info("active bl for aod");
+			dsi_display_set_backlight(connector, disp, 1);
 			break;
 		case OPLUS_DISPLAY_AOD_HBM_SCENE:
 			blank = MSM_DRM_BLANK_POWERDOWN;
