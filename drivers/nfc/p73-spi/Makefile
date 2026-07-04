@@ -1,0 +1,1 @@
+obj-$(CONFIG_NXP_P73_DEVICES) += pn81a.o

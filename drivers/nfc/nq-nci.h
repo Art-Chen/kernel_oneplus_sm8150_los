@@ -27,6 +27,7 @@
 #define NFC_SET_PWR			_IOW(0xE9, 0x01, unsigned int)
 #define ESE_SET_PWR			_IOW(0xE9, 0x02, unsigned int)
 #define ESE_GET_PWR			_IOR(0xE9, 0x03, unsigned int)
+#define ESE_CLEAR_GPIO			_IOW(0xE9, 0x11, unsigned int)
 #define SET_RX_BLOCK			_IOW(0xE9, 0x04, unsigned int)
 #define SET_EMULATOR_TEST_POINT		_IOW(0xE9, 0x05, unsigned int)
 #define NFCC_INITIAL_CORE_RESET_NTF	_IOW(0xE9, 0x10, unsigned int)
@@ -81,4 +82,7 @@ enum nfcc_chip_variant {
 	NFCC_PN66T			= 0x18,	/**< NFCC PN66T */
 	NFCC_NOT_SUPPORTED	        = 0xFF	/**< NFCC is not supported */
 };
+struct nqx_dev;
+int nqx_ese_pwr(struct nqx_dev *nqx_dev, unsigned long int arg);
+int nqx_claim_ese(struct nqx_dev *nqx_dev, bool claim);
 #endif

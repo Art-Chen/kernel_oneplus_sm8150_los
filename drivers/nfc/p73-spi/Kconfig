@@ -1,0 +1,5 @@
+config NXP_P73_DEVICES
+	bool "NXP P73/PN81A secure element driver (SPI)"
+	default y
+	help
+	  NXP P73/PN81A eSE SPI driver for NXP NFC embedded Secure Element.

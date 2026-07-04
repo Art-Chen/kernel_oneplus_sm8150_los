@@ -64,6 +64,9 @@ struct nqx_dev {
 	unsigned int		firm_gpio;
 	unsigned int		clkreq_gpio;
 	unsigned int		ese_gpio;
+	/* eSE access arbitration */
+	struct mutex		ese_status_mutex;
+	bool			ese_in_use;
 	/* NFC VEN pin state powered by Nfc */
 	bool			nfc_ven_enabled;
 	/* NFC_IRQ state */
@@ -382,7 +385,7 @@ static int sn100_ese_pwr(struct nqx_dev *nqx_dev, unsigned long int arg)
  * NFC OFF & eSE ON : NFC_EN high and eSE_pwr_req high.
  * NFC OFF & eSE OFF : NFC_EN low and eSE_pwr_req low.
  */
-static int nqx_ese_pwr(struct nqx_dev *nqx_dev, unsigned long int arg)
+int nqx_ese_pwr(struct nqx_dev *nqx_dev, unsigned long int arg)
 {
 	int r = -1;
 	const unsigned char svdd_off_cmd_warn[] =  {0x2F, 0x31, 0x01, 0x01};
@@ -488,6 +491,25 @@ static int nqx_ese_pwr(struct nqx_dev *nqx_dev, unsigned long int arg)
 	return r;
 }
 
+
+int nqx_claim_ese(struct nqx_dev *nqx_dev, bool claim)
+{
+	mutex_lock(&nqx_dev->ese_status_mutex);
+	if (claim) {
+		if (gpio_is_valid(nqx_dev->firm_gpio) &&
+				gpio_get_value(nqx_dev->firm_gpio)) {
+			dev_err(&nqx_dev->client->dev, "%s: claim ese failed\n",
+					__func__);
+			mutex_unlock(&nqx_dev->ese_status_mutex);
+			return -EBUSY;
+		}
+		nqx_dev->ese_in_use = true;
+	} else {
+		nqx_dev->ese_in_use = false;
+	}
+	mutex_unlock(&nqx_dev->ese_status_mutex);
+	return 0;
+}
 static int nfc_open(struct inode *inode, struct file *filp)
 {
 	struct nqx_dev *nqx_dev = container_of(inode->i_cdev,
@@ -1397,6 +1419,7 @@ static int nqx_probe(struct i2c_client *client,
 	init_waitqueue_head(&nqx_dev->read_wq);
 	mutex_init(&nqx_dev->read_mutex);
 	mutex_init(&nqx_dev->dev_ref_mutex);
+	mutex_init(&nqx_dev->ese_status_mutex);
 	spin_lock_init(&nqx_dev->irq_enabled_lock);
 
 	r = alloc_chrdev_region(&nqx_dev->devno, 0, DEV_COUNT, DEVICE_NAME);
