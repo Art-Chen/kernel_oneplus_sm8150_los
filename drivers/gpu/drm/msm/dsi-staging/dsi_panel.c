@@ -25,7 +25,7 @@
 #include "dsi_panel.h"
 #include "dsi_ctrl_hw.h"
 #include "dsi_parser.h"
-#include "sde_dbg.h"
+#include "sde_dbg.h"a
 #ifdef OPLUS_BUG_STABILITY
 #include <soc/oplus/boot_mode.h>
 #include "../oplus/oplus_display_private_api.h"
@@ -975,6 +975,7 @@ static int dsi_panel_update_backlight(struct dsi_panel *panel,
 	/* Don't set backlight during AOD HBM scene to avoid flicker while switching
 	   from AOD to home screen at low brightness */
 	if ((get_oplus_display_scene() == OPLUS_DISPLAY_AOD_SCENE) || (get_oplus_display_scene() == OPLUS_DISPLAY_AOD_HBM_SCENE)) {
+		dump_stack();
 		pr_err("dsi_cmd AOD mode return bl_lvl:%d\n",bl_lvl);
 		return 0;
 	}
