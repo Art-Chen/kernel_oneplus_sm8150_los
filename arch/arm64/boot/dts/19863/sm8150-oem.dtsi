@@ -322,17 +322,141 @@
 };
 
 /*for aw haptic start*/
+/* chen added param for HyOS modded drv */
 &qupv3_se7_i2c {
-               status = "ok";
-               aw8697_haptic:aw8697_haptic@5A {
-               compatible = "awinic,aw8697_haptic";
-               reg = <0x5A>;
-               reset-gpio = <&tlmm 116 0x00>;
-               irq-gpio = <&tlmm 24 0x00>;
-	       qcom,device_id = <1040>;
-               pinctrl-names = "default";
-               pinctrl-0 = <&aw_irq_gpio_default>;
-               status = "okay";
+	status = "ok";
+	aw8697_haptic:aw8697_haptic@5A {
+		compatible = "awinic,aw8697_haptic";
+		reg = <0x5A>;
+		reset-gpio = <&tlmm 116 0x00>;
+		irq-gpio = <&tlmm 24 0x00>;
+	       	aw8697_vib_mode = < 0 >;   /*mode:   RAM mode->0; CONT mode -> 1*/
+		aw8697_vib_f0_pre = < 1700 >;
+		aw8697_vib_f0_cali_percen = < 7 >;
+		aw8697_vib_cont_drv_lev = < 52 >;
+		aw8697_vib_cont_drv_lvl_ov = < 125 >;
+		aw8697_vib_cont_td = < 0x009a >;
+		aw8697_vib_cont_zc_thr = < 0x0ff1 >;
+		aw8697_vib_cont_num_brk = < 3 >;
+		aw8697_vib_f0_coeff = < 260 >; /*Don't modify it    2.604167*/
+		aw8697_vib_f0_trace_parameter = <0x05 0x03 0x02 0x0f>;
+		aw8697_vib_bemf_config = < 0x10 0x08 0x03 0xf8 >;
+		aw8697_vib_sw_brake = < 0x2c >;
+		aw8697_vib_tset = < 0x12 >;
+		aw8697_vib_r_spare = < 0x68 >;
+		aw8697_vib_bstdbg = < 0x30 0xeb 0xd4 0 0 0 >;
+		aw8697_vib_trig_config = < 0 1 1 1 2
+						0 1 1 1 2
+						0 1 1 1 2 >;
+		aw8697_vib_bst_vol_default = < 0x16 >;
+		aw8697_vib_bst_vol_ram = < 0x16 >;
+		aw8697_vib_bst_vol_rtp = < 0x16 >;
+		vib_effect_id_boundary = < 10 >;
+		vib_effect_max = < 197 >;   /*vib_effect_max must bigger than vib_effect_id*/
+		vib_rtp_time = < 20 20 20 20 20 20 20 20 20000 15000
+				 15000 20000 25000 15000 30000 25000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 20000 20000 20000 20000 20000
+				 20000 20000 20000 20000 20000 >;
+
+		status = "okay";
+		qcom,device_id = <619>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&aw_irq_gpio_default>;
+
+		wf_0 {
+			/*CLICK*/
+			qcom,effect-id = <0>;
+			qcom,wf-vmax-mv = <3600>;
+			qcom,wf-pattern = [3e 3e];
+			qcom,wf-brake-pattern = [02 01 00 00];
+			qcom,wf-play-rate-us = <20000>;
+		};
+		wf_1 {
+			/*DOUBLE CLICK*/
+			qcom,effect-id = <1>;
+			qcom,wf-vmax-mv = <3600>;
+			qcom,wf-pattern = [7e 3e];
+			qcom,wf-brake-pattern = [03 01 00 00];
+			qcom,wf-play-rate-us = <20000>;
+		};
+		wf_2 {
+			/*TICK*/
+			qcom,effect-id = <2>;
+			qcom,wf-vmax-mv = <3600>;
+			qcom,wf-pattern = [7e 3e];
+			qcom,wf-brake-pattern = [02 01 00 00];
+			qcom,wf-play-rate-us = <20000>;
+		};
+		wf_3 {
+			/*THUD*/
+			qcom,effect-id = <3>;
+			qcom,wf-vmax-mv = <3600>;
+			qcom,wf-pattern = [3e 3e];
+			qcom,wf-brake-pattern = [02 01 00 00];
+			qcom,wf-play-rate-us = <20000>;
+		};
+		wf_4 {
+			/*POP*/
+			qcom,effect-id = <4>;
+			qcom,wf-vmax-mv = <3600>;
+			qcom,wf-pattern = [3e 3e];
+			qcom,wf-brake-pattern = [02 01 00 00];
+			qcom,wf-play-rate-us = <28000>;
+		};
+		wf_5 {
+			/*HEAVY CLICK*/
+			qcom,effect-id = <5>;
+			qcom,wf-vmax-mv = <3600>;
+			qcom,wf-pattern = [7e 7e 7e];
+			qcom,wf-brake-pattern = [03 03 01 00];
+			qcom,wf-play-rate-us = <20000>;
+		};
+		wf_6 {
+			/*id 6*/
+			qcom,effect-id = <6>;
+			qcom,wf-vmax-mv = <3600>;
+			qcom,wf-pattern = [3e 3e];
+			qcom,wf-brake-pattern = [02 01 00 00];
+			qcom,wf-play-rate-us = <20000>;
+		};
+		wf_7 {
+			/*id 7*/
+			qcom,effect-id = <7>;
+			qcom,wf-vmax-mv = <3600>;
+			qcom,wf-pattern = [3e 3e];
+			qcom,wf-brake-pattern = [02 01 00 00];
+			qcom,wf-play-rate-us = <20000>;
+		};
+		wf_8 {
+			/*id 8*/
+			qcom,effect-id = <8>;
+			qcom,wf-vmax-mv = <3600>;
+			qcom,wf-pattern = [3e 3e];
+			qcom,wf-brake-pattern = [02 01 00 00];
+			qcom,wf-play-rate-us = <20000>;
+		};
+		wf_9 {
+			/*id 9*/
+			qcom,effect-id = <9>;
+			qcom,wf-vmax-mv = <3600>;
+			qcom,wf-pattern = [3e 3e];
+			qcom,wf-brake-pattern = [02 01 00 00];
+			qcom,wf-play-rate-us = <20000>;
+		};
        };
 };
 /*for aw haptic end*/
