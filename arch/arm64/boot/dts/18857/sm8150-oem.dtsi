@@ -375,7 +375,7 @@
 		status = "okay";
 		qcom,device_id = <619>;
 		pinctrl-names = "default";
-		pinctrl-0 = <&aw_irq_gpio_default>;
+		pinctrl-0 = <&aw_irq &aw_reset>;
 
 		wf_0 {
 			/*CLICK*/
