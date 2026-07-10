@@ -2066,6 +2066,7 @@ static void oplus_chg_show_ui_soc_decimal(struct work_struct *work)
 	} else {
 		oplus_chg_ui_soc_decimal_deinit();
 	}
+	power_supply_changed(chip->batt_psy);
 }
 
 static int charging_limit_time_show(struct seq_file *seq_filp, void *v)
