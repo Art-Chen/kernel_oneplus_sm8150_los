@@ -325,7 +325,7 @@
 /* chen added param for HyOS modded drv */
 &qupv3_se7_i2c {
 	status = "okay";
-	aw8697_haptic@5A {
+	aw8697_haptic:aw8697_haptic@5A {
 		compatible = "awinic,aw8697_haptic";
 		reg = <0x5A>;
 		reset-gpio = <&tlmm 116 0x00>;
