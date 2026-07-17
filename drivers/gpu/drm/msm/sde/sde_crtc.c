@@ -5439,6 +5439,7 @@ extern u32 oplus_backlight_delta;
 int last_fp_index = -1;
 int last_fppressed_index = -1;
 int last_aod_index = -1;
+static int chen_last_aod_log = -1;
 
 static int sde_crtc_onscreenfinger_atomic_check(struct sde_crtc_state *cstate,
 		struct plane_state *pstates, int cnt)
@@ -5553,13 +5554,19 @@ static int sde_crtc_onscreenfinger_atomic_check(struct sde_crtc_state *cstate,
 		if (aod_index >= 0 || (panel_power_mode == SDE_MODE_DPMS_LP1) || (panel_power_mode == SDE_MODE_DPMS_LP2)) {
 			if (oplus_get_panel_brightness() > 1) {
 				oplus_set_aod_dim_alpha(CUST_A_NO);
-				pr_info("Art_Chen: aod mode and panel brightness > 1, calculate dimlayer alpha by brightness\n");
+				if (chen_last_aod_log != 1) {
+					chen_last_aod_log = 1;
+					pr_info("Art_Chen: aod mode and panel brightness > 1, calculate dimlayer alpha by brightness\n");
+				}
 			} else {
 				/* set dimlayer alpha transparent, appear AOD layer by force */
 				if (((fp_index >= 0) || (fppressed_index < 0)) &&
 					((panel_power_mode == SDE_MODE_DPMS_LP1) || (panel_power_mode == SDE_MODE_DPMS_LP2))) {
 					oplus_set_aod_dim_alpha(CUST_A_TRANS);
-					pr_info("Art_Chen: aod mode and panel brightness <= 1, dimlayer alpha transparent\n");
+					if (chen_last_aod_log != 2) {
+						chen_last_aod_log = 2;
+						pr_info("Art_Chen: aod mode and panel brightness <= 1, dimlayer alpha transparent\n");
+					}
 				}
 				/*
 				* set dimlayer alpha opaque, disappear AOD layer by force when pressed down
@@ -5568,12 +5575,20 @@ static int sde_crtc_onscreenfinger_atomic_check(struct sde_crtc_state *cstate,
 				if (((fp_mode == 1) && (panel_power_mode != SDE_MODE_DPMS_ON))
 					|| (oplus_request_power_status == OPLUS_DISPLAY_POWER_ON)) {
 					oplus_set_aod_dim_alpha(CUST_A_OPAQUE);
-					pr_info("Art_Chen: aod mode and fp pressed, dimlayer alpha opaque\n");
+					if (chen_last_aod_log != 3) {
+						chen_last_aod_log = 3;
+						pr_info("Art_Chen: aod mode and fp pressed, dimlayer alpha opaque\n");
+					}
 				}
 			}
 		} else { /* when screen on, restore dimlayer alpha */
-			if (oplus_get_panel_brightness() != 0)
+			if (oplus_get_panel_brightness() != 0) {
 				oplus_set_aod_dim_alpha(CUST_A_NO);
+				if (chen_last_aod_log != 0) {
+					chen_last_aod_log = 0;
+					pr_info("Art_Chen: screen on, dimlayer alpha restored\n");
+				}
+			}
 		}
 
 		SDE_DEBUG("aod_index = %d, fp_index= %d, fppressed_index = %d, fp_mode=%d, panel_power_mode = %d, bl=%d\n",
