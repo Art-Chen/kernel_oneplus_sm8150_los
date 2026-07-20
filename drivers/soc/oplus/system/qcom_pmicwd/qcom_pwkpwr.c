@@ -47,6 +47,40 @@
 **/
 static bool pwkpwr_enable;
 
+static void kpdpwr_s2_enable(void) {
+	struct qpnp_pon *pon = sys_reset_dev;
+	
+	pr_err("QPNP_PON_KPDPWR_S2_CNTL2(pon) addr:%x", QPNP_PON_KPDPWR_S2_CNTL2(pon));
+	int rc = qpnp_pon_masked_write(pon, QPNP_PON_KPDPWR_S2_CNTL2(pon),
+			QPNP_PON_S2_CNTL2_EN, QPNP_PON_S2_CNTL2_EN);
+	if (rc)
+		dev_err(pon->dev,
+				"Unable to write to addr=%x, rc(%d)\n",
+				QPNP_PON_KPDPWR_S2_CNTL2(pon), rc);
+
+	rc = qpnp_pon_masked_write(pon, QPNP_PON_KPDPWR_S2_CNTL(pon),
+			QPNP_PON_S2_CNTL_TYPE_MASK, QPNP_PON_S2_CNTL_EN);
+	if (rc)
+		dev_err(pon->dev,
+				"Unable to write to addr=%x, rc(%d)\n",
+				QPNP_PON_KPDPWR_S2_CNTL(pon), rc);
+
+	rc = qpnp_pon_masked_write(pon, QPNP_PON_KPDPWR_S1_TIMER(pon),
+			QPNP_PON_S1_TIMER_MASK, QPNP_PON_KPDPWR_S1_TIMER_TIME);
+	if (rc)
+		dev_err(pon->dev,
+				"Unable to write to addr=%x, rc(%d)\n",
+				QPNP_PON_KPDPWR_S1_TIMER(pon), rc);
+
+	rc = qpnp_pon_masked_write(pon, QPNP_PON_KPDPWR_S2_TIMER(pon),
+			QPNP_PON_S2_TIMER_MASK, QPNP_PON_KPDPWR_S2_TIMER_TIME);
+	if (rc)
+		dev_err(pon->dev,
+				"Unable to write to addr=%x, rc(%d)\n",
+				QPNP_PON_KPDPWR_S2_TIMER(pon), rc);
+	pwkpwr_enable = true;
+}
+
 static ssize_t kpdpwr_proc_write(struct file *filep, const char __user *ubuf,
 		size_t cnt,loff_t *data)
 {
@@ -158,5 +192,6 @@ void kpdpwr_init(struct qpnp_pon *pon, bool sys_reset)
 		pr_err("kpdpwr:Failed to register kpdpwr interface\n");
 		return;
 	}
+	kpdpwr_s2_enable();
 }
 EXPORT_SYMBOL(kpdpwr_init);
